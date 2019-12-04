@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+aiohttp = "*"
+aiohttp-swagger = "*"
+django = "*"
+celery = "*"
+requests = "*"
+"psycopg2-binary" = "*"
+django-rest-framework = "*"
+
+[dev-packages]
+"flake8" = "*"
+ipython = "*"
+
+[requires]
+python_version = "3.6"
