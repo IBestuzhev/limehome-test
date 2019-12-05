@@ -27,9 +27,9 @@ def fetch_hotels(lat: float, lon: float, pages: int = 5):
     url = (f'https://places.cit.api.here.com/places/v1/browse'
            f'?app_id={APP_ID}'
            f'&app_code={APP_CODE}'
-           f'&in={lat},{lon};r=2000'
+           f'&in={lat},{lon};r=10000'
            f'&cat=accommodation'
-           f'&size=10')
+           f'&size=100')
 
     while url and pages:
         results = data = requests.get(url).json()

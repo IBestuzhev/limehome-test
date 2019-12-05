@@ -22,19 +22,24 @@ class HotelList(ListAPIView):
     pagination_class = HotelDistancePagination
 
     # TODO: Explain this configuration
-    fetch_sync = False
+    fetch_sync = True
     fetch_async = False
     fetch_threshold = None
 
     def pre_fetch_coords(self, point: Point):
         # TODO: Write bout this hooks
+        if 'cursor' in self.request.query_params:
+            return
         if self.fetch_sync:
-            fetch_hotels(point.y, point.x)
+            fetch_hotels(point.y, point.x, 1)
 
         if self.fetch_async:
             fetch_hotels.delay(point.y, point.x)
 
     def post_fetch_coords(self, point: Point, queryset: GeoQueryset):
+        if 'cursor' in self.request.query_params:
+            return
+
         if self.fetch_threshold and queryset.count() < self.fetch_threshold:
             fetch_hotels.delay(point.y, point.x)
 
@@ -47,8 +52,8 @@ class HotelList(ListAPIView):
         self.pre_fetch_coords(point)
 
         queryset: GeoQueryset = super().get_queryset()
+        queryset = queryset.filter_by_distance(point, D(km=10))
         queryset = queryset.calculate_distance(point)
-        queryset = queryset.filter_by_distance(D(km=2))
         queryset = queryset.order_by('distance')
 
         self.post_fetch_coords(point, queryset)

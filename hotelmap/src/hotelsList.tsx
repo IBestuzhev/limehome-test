@@ -6,7 +6,7 @@ type paginationProcessor = (url: string) => void;
 
 export const HotelsList: React.FC<{'hotels': hotelsData, paginator: paginationProcessor}> = ({hotels, paginator}) => {
     return (
-        <div>
+        <React.Fragment>
             <button disabled={!hotels.previous} onClick={() => paginator(hotels.previous as string)}>Closer</button>
 
             <ul>
@@ -21,6 +21,6 @@ export const HotelsList: React.FC<{'hotels': hotelsData, paginator: paginationPr
             </ul>
 
             <button disabled={!hotels.next} onClick={() => paginator(hotels.next as string)}>Further</button>
-        </div>
+        </React.Fragment>
     )
 }

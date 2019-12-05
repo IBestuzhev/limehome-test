@@ -1,7 +1,15 @@
+export interface hotelInfo {
+    id: number,
+    icon: string,
+    title: string,
+    distance: number,
+    position: number[],
+}
+
 export interface hotelsData {
     previous: string | null,
     next: string | null,
-    results: any
+    results: hotelInfo[],
 }
 
 export function fetchByUrl(url: string, store: Function) {
@@ -13,6 +21,18 @@ export function fetchByUrl(url: string, store: Function) {
     )
 }
 
-export function fetchByLocation(lat: number, lon: number, store: Function) {
-    return fetchByUrl(`/api/hotels/?lat=${lat}&lon=${lon}`, store)
+export function fetchByLocation(lat: number, lon: number, 
+                                store: Function, updateHistory: boolean = true) {
+    let fullStore = store;                                    
+    if (updateHistory) {
+        fullStore = (data: hotelsData) => {
+            window.history.pushState(
+                {lat, lon},
+                'Lime Home Test',
+                `/?lat=${lat}&lon=${lon}`
+            )
+            store(data);
+        }
+    }
+    return fetchByUrl(`/api/hotels/?lat=${lat}&lon=${lon}`, fullStore)
 }

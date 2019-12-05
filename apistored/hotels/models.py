@@ -10,8 +10,8 @@ class GeoQueryset(models.QuerySet):
     def calculate_distance(self, point: Point) -> 'GeoQueryset':
         return self.annotate(distance=Distance('position', point))
 
-    def filter_by_distance(self, distance: DistanceType) -> 'GeoQueryset':
-        return self.filter(distance__lte=distance)
+    def filter_by_distance(self, point: Point, distance: DistanceType) -> 'GeoQueryset':
+        return self.filter(position__distance_lte=(point, distance))
 
 
 class Hotel(models.Model):
