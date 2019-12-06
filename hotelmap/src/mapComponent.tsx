@@ -55,6 +55,7 @@ export const MapComponent: React.FC<propTypes> = (
                     <HEREMap
                         appId={process.env.REACT_APP_MAPS_APP_ID || ''}
                         appCode={process.env.REACT_APP_MAPS_APP_CODE || ''}
+                        secure={process.env.NODE_ENV === 'production'}
                         interactive={true}
                         center={{ lat: nextSearchPos[0], lng: nextSearchPos[1] }}
                         zoom={zoom}
