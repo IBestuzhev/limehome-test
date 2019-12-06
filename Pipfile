@@ -13,6 +13,7 @@ requests = "*"
 django-rest-framework = "*"
 django-environ = "*"
 redis = "*"
+drf-yasg = "*"
 
 [dev-packages]
 "flake8" = "*"
@@ -24,4 +25,3 @@ python_version = "3.6"
 [scripts]
 apiproxy = "python apiproxy/main.py"
 apistored = "python apistored/manage.py runserver 8080"
-

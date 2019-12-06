@@ -10,6 +10,36 @@ type propType = {
     setActiveHotel: (n: number) => void,
 }
 
+function formatCoord(deg: number, coordType: 'lat' | 'lon'): string {
+    let side = '';
+    if (deg > 0) {
+        side = (coordType === 'lon') ? 'E' : 'N';
+    } else {
+        side = (coordType === 'lon') ? 'W' : 'S';
+    }
+    // Inspired by https://stackoverflow.com/a/5786627/978434
+    deg = Math.abs(deg);
+    let d = Math.floor (deg);
+    let minfloat = (deg - d) * 60;
+    let m = Math.floor(minfloat);
+    let secfloat = (minfloat - m) * 60;
+    let s = Math.round(secfloat);
+
+    // After rounding, the seconds might become 60. These two
+    // if-tests are not necessary if no rounding is done.
+    if (s === 60) {
+        m++;
+        s=0;
+    }
+    if (m === 60) {
+        d++;
+        m=0;
+    }
+
+    return `${side} ${d}° ${m}′ ${s}″`
+
+}
+
 export const HotelsList: React.FC<propType> = ({hotels, paginator, activeHotel, setActiveHotel}) => {
     return (
         <React.Fragment>
@@ -31,15 +61,17 @@ export const HotelsList: React.FC<propType> = ({hotels, paginator, activeHotel, 
                         onClick={() => setActiveHotel(el.id)}
                     >
                         <div className="hotelCard__title" title={el.title}>
-                            {el.title}
-                        </div>
-                        <div className="hotelCard__distance">
-                            {el.distance.toFixed(0)} m
+                            <div>{el.title}</div>
+
+                            <div className="hotelCard__distance">
+                                {el.distance.toFixed(0)} m
+                            </div>
+
                         </div>
                         <div className="hotelCard__coords">
-                            {el.position[0]}
+                            {formatCoord(el.position[0], 'lat')}
                             <br/>
-                            {el.position[1]}
+                            {formatCoord(el.position[1], 'lon')}
                         </div>
                     </li>
                 ))}

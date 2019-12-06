@@ -28,5 +28,6 @@ class Hotel(models.Model):
         return self.title
 
     def reversed_coords(self) -> List[float]:
+        """Return coordinates in format to match Here API"""
         # Lat first
         return self.position.coords[::-1]

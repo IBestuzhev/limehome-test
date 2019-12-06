@@ -93,6 +93,8 @@ I used `python 3.6.3`, so any later version will work. `3.5` will not work as `f
 
 Also note that there is single `Pipfile` to handle both `aiohttp` and `django` versions of backend.
 
+I modified response from Here API to match response from Django's version
+
 #### Getting started
 
 1. Install dependencies with `pipenv install --dev`
@@ -115,6 +117,7 @@ Also you need Redis to run celery and PostGIS to run DB. If you use docker you c
 After this you can do
 
 1. `pipenv install --dev`
+1. Add the same `.env` file as for `apiproxy`
 1. Activate virtual env with `pipenv shell`
 1. `cd apistored`
 1. `python manage.py migrate`
@@ -148,3 +151,4 @@ Some things I'd implement for bigger project:
 * Use SCSS
 * Use Redux or Context if project get's bigger (deeper nesting of components)
 * There is a terrible fix for `here-maps-react` to handle markers update. I would like to similar apps, maybe some of them will perform better.
+* Move `package.json` to top level. Now there are two files, one is actual react script and second is for Heroku. And this does not allow Heroku to cache dependencies.

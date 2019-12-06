@@ -17,9 +17,11 @@ class HotelSerializer(serializers.ModelSerializer):
 
 class CoordinatesSerializer(serializers.Serializer):
     lat = serializers.FloatField(required=True,
-                                 validators=[MaxValueValidator(90.), MinValueValidator(-90.)])
+                                 validators=[MaxValueValidator(90.), MinValueValidator(-90.)],
+                                 help_text='Latitude, decimal degrees')
     lon = serializers.FloatField(required=True,
-                                 validators=[MaxValueValidator(180.), MinValueValidator(-180.)])
+                                 validators=[MaxValueValidator(180.), MinValueValidator(-180.)],
+                                 help_text='Longtitude, decimal degrees')
 
     def validate(self, data):
         data['point'] = Point(data['lon'], data['lat'], srid=4326)  # WGS 84

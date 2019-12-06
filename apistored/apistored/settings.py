@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.gis',
 
     'rest_framework',
+    'drf_yasg',
 
     'hotels',
 ]
@@ -134,6 +135,8 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(REACT_BUILD_PATH, 'static')
 ]
+
+ENABLE_SWAGGER = env('LH_ENABLE_SWAGGER', cast=bool, default=True)
 
 # HERE MAPS
 APP_ID = env('LH_MAPS_APP_ID')

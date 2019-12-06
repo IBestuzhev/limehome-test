@@ -24,11 +24,19 @@ def store_data(hotels):
 
 
 @shared_task
-def fetch_hotels(lat: float, lon: float, pages: int = 5):
+def fetch_hotels(lat: float, lon: float, pages: int = 5, radius: int = 10000):
+    """
+    Downloads data from Here API and store it into DB.
+
+    It uses `/browse` API to download list of places with `accommodation` type.
+    `lat`, `lon` and `radius` are used to specify search area.
+
+    This task downloads up to `pages` pages, 100 elements on each.
+    """
     params = {
         'app_id': settings.APP_ID,
         'app_code': settings.APP_CODE,
-        'in': f'{lat},{lon};r=10000',
+        'in': f'{lat},{lon};r={radius}',
         'cat': 'accommodation',
         'size': '100',
     }
@@ -50,6 +58,14 @@ def fetch_hotels(lat: float, lon: float, pages: int = 5):
 
 @shared_task
 def clean_up_hotels():
+    """
+    Task that should be launched periodicaly.
+
+    It looks for hotels that were not downloaded from API for a while.
+    Either nobody looked at that aread, or this hotel was deleted.
+
+    This task uses `/lookup` API to check if hotel still exists on Here Maps.
+    """
     # find hotels that were not requested for a while
     update_edge = date.today() - timedelta(days=90)
     old_hotels = (Hotel.objects

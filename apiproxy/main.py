@@ -20,15 +20,21 @@ routes = web.RouteTableDef()
 
 @routes.view('/api/hotels/')
 class HotelsView(web.View):
+    search_distance = 10000
+
     # TODO: Add docstrings to methods
     def get_coords(self) -> Tuple[float]:
+        """
+        Get coordinates from GET parameters or raise an error
+        in case they are missing or in wrong format.
+
+        The format used is Decimal degrees
+        """
         lat = self.request.query.get('lat', None)
         lon = self.request.query.get('lon', None)
         if not (lat and lon):
             raise web.HTTPException(text=dumps({'error': 'both lat and lon are required'}),
                                     content_type='application/json')
-            return web.json_response({'error': 'both lat and lon are required'},
-                                     status=400)
 
         try:
             lat, lon = map(float, [lat, lon])
@@ -37,23 +43,27 @@ class HotelsView(web.View):
                 text=dumps({'error': 'Coordinates should be in float point format'}),
                 content_type='application/json'
             )
-            return web.json_response(
-                {'error': 'Coordinates should be in float point format'},
-                status=400
-            )
         return lat, lon
 
     def build_url(self, lat: float, lon: float) -> str:
+        """
+        Build the URL for API request.
+
+        Consider coordinates and pagination context
+        """
         context = self.request.query.get('context', '')
         if context:
             context = f';context={context}'
         return (f'https://places.cit.api.here.com/places/v1/browse{context}'
                 f'?app_id={APP_ID}'
                 f'&app_code={APP_CODE}'
-                f'&in={lat},{lon};r=2000'
+                f'&in={lat},{lon};r={self.search_distance}'
                 f'&cat=accommodation')
 
     def convert_pagination_url(self, page_url: str) -> str:
+        """
+        Convert `next` and `previous` links to point to proxy server, not to Here API directly
+        """
         parsed_url = urlparse(page_url)
 
         if 'context=' not in parsed_url.params:
@@ -71,7 +81,15 @@ class HotelsView(web.View):
                 f'?{urlencode(merged_params, doseq=True)}')
 
     def process_data(self, data: dict) -> dict:
-        # TODO: Describe reasons for this transformation
+        """
+        This method does several changes with data, so format matches format from
+        `apistored` application.
+
+        1. Change the next and previous URLs to point to proxy
+        2. Normalize first response and paginated response to have
+           the same format
+        3. Rename keys like `items` -> `results` to match DRF.
+        """
         data = data.get('results', data)
         data['results'] = data.pop('items', [])
         for process_url in ('next', 'previous'):
@@ -128,7 +146,6 @@ class HotelsView(web.View):
         return web.json_response(data)
 
 
-@routes.get('/')
 def index_response(request):
     return web.FileResponse(os.path.join(REACT_BUILD_PATH, 'index.html'))
 
@@ -148,7 +165,9 @@ def _get_app():
         contact='best.igor@gmail.com'
     )
 
-    app.router.add_static('/', REACT_BUILD_PATH, show_index=True)
+    if os.path.exists(REACT_BUILD_PATH):
+        app.router.add_get('/', index_response)
+        app.router.add_static('/', REACT_BUILD_PATH, show_index=True)
 
     return app
 

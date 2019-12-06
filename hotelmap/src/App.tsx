@@ -44,7 +44,10 @@ const App: React.FC = () => {
     <div className="App">
       <header className='main-header'>
         <div className="wrapper">
-          <h1 className="main-header__title">🌐 Hotel lookup</h1>
+          <h1 className="main-header__title">
+            <span role="img" aria-label="Globe">🌐 </span>
+            Hotel lookup
+          </h1>
         </div>
       </header>
       <div className="wrapper main-wrapper">

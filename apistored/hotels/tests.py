@@ -7,10 +7,6 @@ from .views import HotelList
 
 # Create your tests here.
 
-# TODO: Test download hooks
-# TODO: Test sorting
-# TODO: Test filtration by distance
-
 
 @mock.patch('hotels.views.fetch_hotels')
 class FetchTaskTest(TestCase):
@@ -30,7 +26,7 @@ class FetchTaskTest(TestCase):
         request = self.factory.get('/api/hotels/?lat=10&lon=10')
         view(request)
 
-        mocked_task.assert_called_once_with(10., 10., 1)
+        mocked_task.assert_called_once_with(10., 10., 1, radius=10000)
         mocked_task.delay.assert_not_called()
 
     def test_post_sync(self, mocked_task: mock.MagicMock):
@@ -47,7 +43,7 @@ class FetchTaskTest(TestCase):
         request = self.factory.get('/api/hotels/?lat=10&lon=10')
         view(request)
 
-        mocked_task.delay.assert_called_once_with(10., 10.)
+        mocked_task.delay.assert_called_once_with(10., 10., radius=10000)
         mocked_task.assert_not_called()
 
     def _run_threshold_test(self, amount: int = 5):
@@ -79,7 +75,7 @@ class FetchTaskTest(TestCase):
         """
         self._run_threshold_test(5)
 
-        mocked_task.delay.assert_called_once_with(10., 10.)
+        mocked_task.delay.assert_called_once_with(10., 10., radius=10000)
         mocked_task.assert_not_called()
 
     def test_over_threshold(self, mocked_task: mock.MagicMock):
