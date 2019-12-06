@@ -11,6 +11,8 @@ celery = "*"
 requests = "*"
 "psycopg2-binary" = "*"
 django-rest-framework = "*"
+django-environ = "*"
+redis = "*"
 
 [dev-packages]
 "flake8" = "*"
@@ -18,3 +20,8 @@ ipython = "*"
 
 [requires]
 python_version = "3.6"
+
+[scripts]
+apiproxy = "python apiproxy/main.py"
+apistored = "python apistored/manage.py runserver 8080"
+frontdev = "cd hotelmap; npm start"
