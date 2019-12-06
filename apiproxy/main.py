@@ -146,6 +146,8 @@ def _get_app():
 
     app.router.add_static('/', REACT_BUILD_PATH, show_index=True)
 
+    return app
+
 
 if __name__ == '__main__':
     app = _get_app()
