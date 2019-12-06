@@ -15,7 +15,11 @@ export const HotelsList: React.FC<propType> = ({hotels, paginator, activeHotel, 
         <React.Fragment>
             <div className="list-block__panel">
                 <button disabled={!hotels.previous} onClick={() => paginator(hotels.previous as string)}>
-                    Closer
+                    &larr; Closer
+                </button>
+                &nbsp;&nbsp;&nbsp;
+                <button disabled={!hotels.next} onClick={() => paginator(hotels.next as string)}>
+                    Further &rarr;
                 </button>
             </div>
 
@@ -40,11 +44,6 @@ export const HotelsList: React.FC<propType> = ({hotels, paginator, activeHotel, 
                     </li>
                 ))}
             </ul>
-            <div className="list-block__panel">
-                <button disabled={!hotels.next} onClick={() => paginator(hotels.next as string)}>
-                    Further
-                </button>
-            </div>
         </React.Fragment>
     )
 }

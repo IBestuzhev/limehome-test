@@ -52,6 +52,7 @@ const App: React.FC = () => {
           <MapComponent 
             hotels={hotels}
             activeHotel={activeHotel}
+            setActiveHotel={setActiveHotel}
             searchPos={searchPos}
             nextSearchPos={nextSearchPos}
             updateNextSearchPos={updateNextSearchPos}

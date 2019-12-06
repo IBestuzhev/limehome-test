@@ -9,7 +9,7 @@ from aiohttp_swagger import setup_swagger
 
 APP_ID = os.environ.get('LH_MAPS_APP_ID')
 APP_CODE = os.environ.get('LH_MAPS_APP_CODE')
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 REACT_BUILD_PATH = os.environ.get(
     'LH_REACT_BUILD_PATH',
     os.path.join(BASE_DIR, '..', 'hotelmap', 'build')

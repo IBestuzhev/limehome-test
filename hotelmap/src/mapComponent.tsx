@@ -11,6 +11,7 @@ type propTypes = {
     updateNextSearchPos: (a: number[]) => void,
     hotels: hotelsData,
     activeHotel: number,
+    setActiveHotel: (n: number) => void,
 }
 
 
@@ -43,7 +44,7 @@ class ErrorBoundary extends React.Component<{}, { hasError: boolean }> {
 }
 
 export const MapComponent: React.FC<propTypes> = (
-    { searchPos, nextSearchPos, updateNextSearchPos, hotels, searchClick, activeHotel }
+    { searchPos, nextSearchPos, updateNextSearchPos, hotels, searchClick, activeHotel, setActiveHotel }
 ) => {
 
     const [zoom, setZoom] = useState<number>(12);
@@ -70,6 +71,7 @@ export const MapComponent: React.FC<propTypes> = (
                                 lat={el.position[0]}
                                 lng={el.position[1]}
                                 bitmap={el.id === activeHotel? el.icon : null}
+                                onTap={() => setActiveHotel(el.id)}
                                 key={`marker-${el.id}-${Math.random().toFixed(5)}`}
                             />
                             /**

@@ -24,4 +24,4 @@ python_version = "3.6"
 [scripts]
 apiproxy = "python apiproxy/main.py"
 apistored = "python apistored/manage.py runserver 8080"
-frontdev = "cd hotelmap; npm start"
+
