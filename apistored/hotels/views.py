@@ -21,9 +21,21 @@ class HotelList(ListAPIView):
     queryset = Hotel.objects.all()
     pagination_class = HotelDistancePagination
 
-    # TODO: Explain this configuration
+    # I think this is not ready for production, but OK for coding challenge
+    # In real-life project I would expect another way to populate DB, like speical API
+    # to import it completely
+
+    # However coding challenge works with HERE API and fetch small pieces of data.
+    # So there are several modes how to populate API
+    # More description is in `hotels/tests.py`
+
+    # Run Here map API syncronously before checking the DB
     fetch_sync = True
+    # Call API ayncronously with the same coordinates
+    # Return data to user immediately from DB
+    # Later data is refreshed
     fetch_async = False
+    # Call API only if we have less then fetch_threshold results
     fetch_threshold = None
 
     def pre_fetch_coords(self, point: Point):

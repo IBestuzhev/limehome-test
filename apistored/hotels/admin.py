@@ -6,4 +6,5 @@ from .models import Hotel
 
 @admin.register(Hotel)
 class HotelAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('__str__', 'position')
+    readonly_fields = ('api_id',)

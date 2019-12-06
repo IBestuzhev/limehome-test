@@ -9,7 +9,8 @@ type propTypes = {
     searchPos: number[],
     nextSearchPos: number[],
     updateNextSearchPos: (a: number[]) => void,
-    hotels: hotelsData
+    hotels: hotelsData,
+    activeHotel: number,
 }
 
 
@@ -42,7 +43,7 @@ class ErrorBoundary extends React.Component<{}, { hasError: boolean }> {
 }
 
 export const MapComponent: React.FC<propTypes> = (
-    { searchPos, nextSearchPos, updateNextSearchPos, hotels, searchClick }
+    { searchPos, nextSearchPos, updateNextSearchPos, hotels, searchClick, activeHotel }
 ) => {
 
     const [zoom, setZoom] = useState<number>(12);
@@ -52,8 +53,8 @@ export const MapComponent: React.FC<propTypes> = (
             <div className="map-block__map">
                 <ErrorBoundary>
                     <HEREMap
-                        appId="Tbu3xBVyM9dUB0HlkAfi"
-                        appCode="96rvfoL4yKT9u9d79F8jag"
+                        appId={process.env.REACT_APP_MAPS_APP_ID || ''}
+                        appCode={process.env.REACT_APP_MAPS_APP_CODE || ''}
                         interactive={true}
                         center={{ lat: nextSearchPos[0], lng: nextSearchPos[1] }}
                         zoom={zoom}
@@ -67,9 +68,19 @@ export const MapComponent: React.FC<propTypes> = (
                             <Marker
                                 lat={el.position[0]}
                                 lng={el.position[1]}
-                                bitmap={el.icon}
-                                key={`marker-${el.id}`}
+                                bitmap={el.id === activeHotel? el.icon : null}
+                                key={`marker-${el.id}-${Math.random().toFixed(5)}`}
                             />
+                            /**
+                             * Note the `key` is completely against React best practices
+                             * I know it hearts performance
+                             * Seems like some bug in `here-maps-react`
+                             * If Map is re-rendered but Markers do not change, it causes
+                             * all markers to disappear. Next re-render will cause an exception
+                             * and map will restart.
+                             * With random key this works normally, recreating markers each time.
+                             * I guess with 10 elements browser can handle it.
+                             */
                         ))}
                     </HEREMap>
                 </ErrorBoundary>

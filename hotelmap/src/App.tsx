@@ -20,17 +20,16 @@ const App: React.FC = () => {
     parseFloat(urlQuery.get('lon') || '13.38066')
   ]);
   const [nextSearchPos, updateNextSearchPos] = useState([...searchPos]);
+  const [activeHotel, setActiveHotel] = useState<number>(0);
 
   useEffect(() => {
-    let shouldPushState = !(urlQuery.has('lat') && urlQuery.has('lon'));
-    fetchByLocation(searchPos[0], searchPos[1], storeHotels, shouldPushState);
-  }, [])
+    fetchByLocation(searchPos[0], searchPos[1], storeHotels);
+  }, [searchPos])
 
   useEffect(() => {
     window.onpopstate = (stateEvent: PopStateEvent) => {
       const state: {lat: number, lon: number} = stateEvent.state;
       if (state.lon && state.lat) {
-        fetchByLocation(state.lat, state.lon, storeHotels, false);
         updateSearchPos([state.lat, state.lon]);
         updateNextSearchPos([state.lat, state.lon])
       }
@@ -52,19 +51,22 @@ const App: React.FC = () => {
         <div className="map-block">
           <MapComponent 
             hotels={hotels}
+            activeHotel={activeHotel}
             searchPos={searchPos}
             nextSearchPos={nextSearchPos}
             updateNextSearchPos={updateNextSearchPos}
             searchClick={() => {
-              fetchByLocation(nextSearchPos[0], nextSearchPos[1], (data: hotelsData) => {
-                storeHotels(data);
-                updateSearchPos([...nextSearchPos]);
-              });
+              updateSearchPos([...nextSearchPos]);
             }}
           />
         </div>
         <div className="list-block">
-          <HotelsList hotels={hotels} paginator={(url => fetchByUrl(url, storeHotels))} />
+          <HotelsList 
+            hotels={hotels} 
+            paginator={(url => fetchByUrl(url, storeHotels))} 
+            activeHotel={activeHotel}
+            setActiveHotel={setActiveHotel}
+          />
         </div>
       </div>
       {/* {JSON.stringify(hotels)} */}

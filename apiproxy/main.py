@@ -1,4 +1,5 @@
 from typing import Tuple
+import os
 from json import dumps
 from urllib.parse import urlparse, parse_qs, urlencode
 
@@ -6,10 +7,13 @@ from aiohttp import web, ClientSession
 from aiohttp_swagger import setup_swagger
 
 
-# TODO: load from environ
-APP_ID = 'Tbu3xBVyM9dUB0HlkAfi'
-APP_CODE = '96rvfoL4yKT9u9d79F8jag'
-
+APP_ID = os.environ.get('LH_MAPS_APP_ID')
+APP_CODE = os.environ.get('LH_MAPS_APP_CODE')
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REACT_BUILD_PATH = os.environ.get(
+    'LH_REACT_BUILD_PATH',
+    os.path.join(BASE_DIR, '..', 'hotelmap', 'build')
+)
 
 routes = web.RouteTableDef()
 
@@ -120,7 +124,15 @@ class HotelsView(web.View):
         return web.json_response(data)
 
 
-if __name__ == '__main__':
+@routes.get('/')
+def index_response(request):
+    return web.FileResponse(os.path.join(REACT_BUILD_PATH, 'index.html'))
+
+
+def _get_app():
+    assert APP_CODE
+    assert APP_ID
+
     app = web.Application()
     app.router.add_routes(routes)
 
@@ -132,5 +144,9 @@ if __name__ == '__main__':
         contact='best.igor@gmail.com'
     )
 
-    # TODO: Load port from environ
-    web.run_app(app)
+    app.router.add_static('/', REACT_BUILD_PATH, show_index=True)
+
+
+if __name__ == '__main__':
+    app = _get_app()
+    web.run_app(app, port=int(os.environ.get('PORT', 8080)))

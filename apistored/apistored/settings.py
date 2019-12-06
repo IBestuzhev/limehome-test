@@ -11,19 +11,26 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+import environ
+
+
+env = environ.Env(
+    LH_SECRET_KEY=(str, '33kfxlkpvly@&xnz=ke-gs%+9a)w9s=$plwhh-=yo8t08((+#7'),
+    LH_DEBUG=(bool, True)
+)
+environ.Env.read_env()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '33kfxlkpvly@&xnz=ke-gs%+9a)w9s=$plwhh-=yo8t08((+#7'
+SECRET_KEY = env('LH_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('LH_DEBUG')
 
 ALLOWED_HOSTS = []
 
@@ -79,14 +86,8 @@ WSGI_APPLICATION = 'apistored.wsgi.application'
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'limehome',
-        'USER': 'limehome',
-        'PASSWORD': 'limehome',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-    }
+    'default': env.db('LH_DATABASE_URL',
+                      default='postgis://limehome:limehome@127.0.0.1:5432/limehome')
 }
 
 
@@ -126,6 +127,25 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
-STATIC_URL = '/static/'
+REACT_BUILD_PATH = env('LH_REACT_BUILD_PATH',
+                       default=os.path.join(BASE_DIR, '..', 'hotelmap', 'build'))
 
-# GDAL_LIBRARY_PATH = 'C:\\Work\\limehome\\gdal\\bin\\'
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(REACT_BUILD_PATH, 'static')
+]
+
+# HERE MAPS
+APP_ID = env('LH_MAPS_APP_ID')
+APP_CODE = env('LH_MAPS_APP_CODE')
+
+# CELERY
+CELERY_TASK_IGNORE_RESULT = True
+CELERY_ACCEPT_CONTENT = ['json', 'yaml']
+CELERY_BROKER_URL = env('LH_CELERY_BROKER', default="redis://localhost:6379/0")
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    'visibility_timeout': 43200,
+    'fanout_patterns': True,
+    'fanout_prefix': True
+}
+CELERY_BROKER_CONNECTION_MAX_RETRIES = 3

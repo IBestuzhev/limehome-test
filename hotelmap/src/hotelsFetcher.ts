@@ -14,7 +14,7 @@ export interface hotelsData {
 
 export function fetchByUrl(url: string, store: Function) {
     // TODO: solve CORS issue
-    fetch(url.replace(':8080', ':3000')).then(
+    fetch(url.replace('http://localhost:8080', '')).then(
         response => response.json()
     ).then(
         data => store(data)
@@ -22,9 +22,10 @@ export function fetchByUrl(url: string, store: Function) {
 }
 
 export function fetchByLocation(lat: number, lon: number, 
-                                store: Function, updateHistory: boolean = true) {
-    let fullStore = store;                                    
-    if (updateHistory) {
+                                store: Function) {
+    let fullStore = store;         
+                               
+    if (window.location.search !== `?lat=${lat}&lon=${lon}`) {
         fullStore = (data: hotelsData) => {
             window.history.pushState(
                 {lat, lon},

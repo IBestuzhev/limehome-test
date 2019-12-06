@@ -1,13 +1,14 @@
+from datetime import date, timedelta
+from urllib.parse import urlencode
+
 from celery import shared_task, Task
 from django.contrib.gis.geos import Point
+from django.conf import settings
 import requests
 
 from .models import Hotel
 
 fetch_hotels: Task
-# TODO: load from environ
-APP_ID = 'Tbu3xBVyM9dUB0HlkAfi'
-APP_CODE = '96rvfoL4yKT9u9d79F8jag'
 
 
 def store_data(hotels):
@@ -24,12 +25,15 @@ def store_data(hotels):
 
 @shared_task
 def fetch_hotels(lat: float, lon: float, pages: int = 5):
+    params = {
+        'app_id': settings.APP_ID,
+        'app_code': settings.APP_CODE,
+        'in': f'{lat},{lon};r=10000',
+        'cat': 'accommodation',
+        'size': '100',
+    }
     url = (f'https://places.cit.api.here.com/places/v1/browse'
-           f'?app_id={APP_ID}'
-           f'&app_code={APP_CODE}'
-           f'&in={lat},{lon};r=10000'
-           f'&cat=accommodation'
-           f'&size=100')
+           f'?{urlencode(params)}')
 
     while url and pages:
         results = data = requests.get(url).json()
@@ -43,4 +47,32 @@ def fetch_hotels(lat: float, lon: float, pages: int = 5):
         pages -= 1
         url = results.get('next')
 
-# TODO: Cleanup task - check last_updated and try to get via ID
+
+@shared_task
+def clean_up_hotels():
+    # find hotels that were not requested for a while
+    update_edge = date.today() - timedelta(days=90)
+    old_hotels = (Hotel.objects
+                  .filter(last_update__lt=update_edge)
+                  .order_by('last_update'))
+
+    # Process up to 100
+    for hotel in old_hotels:
+        params = {
+            'app_id': settings.APP_ID,
+            'app_code': settings.APP_CODE,
+            'source': 'sharing',
+            'id': hotel.api_id,
+        }
+        url = (f'https://places.cit.api.here.com/places/v1/places/lookup'
+               f'?{urlencode(params)}')
+
+        response = requests.get(url)
+
+        if not response.ok and response.status_code == 404:
+            hotel.delete()
+            continue
+
+        data = response.json()
+        hotel.title = data.get('name', hotel.title)
+        hotel.save()
