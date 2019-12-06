@@ -63,7 +63,11 @@ class HotelsView(web.View):
         merged_params = dict(self.request.query)
         merged_params.update(context=params.get('context', ''))
 
-        return (f'{self.request.scheme}://{self.request.host}{self.request.path}'
+        # We are running on Heroku, which sets this header.
+        # Also we use it only for link building, so it should not be an issue
+        scheme = self.request.headers.get('X-Forwarded-Proto', self.request.scheme)
+
+        return (f'{scheme}://{self.request.host}{self.request.path}'
                 f'?{urlencode(merged_params, doseq=True)}')
 
     def process_data(self, data: dict) -> dict:
