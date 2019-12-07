@@ -12,7 +12,7 @@ export interface hotelsData {
     results: hotelInfo[],
 }
 
-export function fetchByUrl(url: string, store: Function) {
+export function fetchByUrl(url: string, store: (v: hotelsData) => void) {
     // TODO: solve CORS issue
     fetch(url.replace('http://localhost:8080', '')).then(
         response => response.json()
@@ -22,17 +22,17 @@ export function fetchByUrl(url: string, store: Function) {
 }
 
 export function fetchByLocation(lat: number, lon: number, 
-                                store: Function) {
+                                store: (value: hotelsData) => void) {
     let fullStore = store;         
                                
     if (window.location.search !== `?lat=${lat}&lon=${lon}`) {
-        fullStore = (data: hotelsData) => {
+        fullStore = (value: hotelsData) => {
             window.history.pushState(
                 {lat, lon},
                 'Lime Home Test',
                 `/?lat=${lat}&lon=${lon}`
             )
-            store(data);
+            store(value);
         }
     }
     return fetchByUrl(`/api/hotels/?lat=${lat}&lon=${lon}`, fullStore)

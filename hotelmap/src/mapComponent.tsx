@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import HEREMap, { Marker } from "here-maps-react";
 import { HEvent } from "here-maps-react/dist/utils/map-events";
-import { hotelsData } from "./hotelsFetcher";
+import { hotelInfo } from "./hotelsFetcher";
 
 
 type propTypes = {
@@ -9,7 +9,7 @@ type propTypes = {
     searchPos: number[],
     nextSearchPos: number[],
     updateNextSearchPos: (a: number[]) => void,
-    hotels: hotelsData,
+    hotels: hotelInfo[],
     activeHotel: number,
     setActiveHotel: (n: number) => void,
 }
@@ -66,7 +66,7 @@ export const MapComponent: React.FC<propTypes> = (
                             setZoom(this.getZoom());
                         } as HEvent}
                     >
-                        {hotels.results.map((el: any) => (
+                        {hotels.map((el: any) => (
                             <Marker
                                 lat={el.position[0]}
                                 lng={el.position[1]}

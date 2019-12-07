@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 from urllib.parse import urlencode
+import logging
 
 from celery import shared_task, Task
 from django.contrib.gis.geos import Point
@@ -8,7 +9,10 @@ import requests
 
 from .models import Hotel
 
+
+logger = logging.getLogger(__name__)
 fetch_hotels: Task
+clean_up_hotels: Task
 
 
 def store_data(hotels):
@@ -43,8 +47,17 @@ def fetch_hotels(lat: float, lon: float, pages: int = 5, radius: int = 10000):
     url = (f'https://places.cit.api.here.com/places/v1/browse'
            f'?{urlencode(params)}')
 
+    logger.info(f'Fetching data for {lat}, {lon}')
+
     while url and pages:
-        results = data = requests.get(url).json()
+        logger.debug(f'Downloading {url}')
+        response = requests.get(url)
+
+        if not response.ok:
+            logger.error(f'Error {response.status_code} on URL: {url}')
+            return
+
+        results = data = response.json()
 
         if 'results' in data:
             # Difference between first and next pages
@@ -72,8 +85,10 @@ def clean_up_hotels():
                   .filter(last_update__lt=update_edge)
                   .order_by('last_update'))
 
+    logger.info(f'There are {old_hotels.count()} obsolete hotels')
+
     # Process up to 100
-    for hotel in old_hotels:
+    for hotel in old_hotels[:100].iterator():
         params = {
             'app_id': settings.APP_ID,
             'app_code': settings.APP_CODE,
@@ -83,12 +98,19 @@ def clean_up_hotels():
         url = (f'https://places.cit.api.here.com/places/v1/places/lookup'
                f'?{urlencode(params)}')
 
+        logger.debug(f'Download hotel info for {hotel.api_id}')
+
         response = requests.get(url)
 
         if not response.ok and response.status_code == 404:
+            logger.debug(f'Deleting hotel with {hotel.api_id}')
             hotel.delete()
+            continue
+        elif not response.ok:
+            logger.error(f'Error {response.status_code} on URL: {url}')
             continue
 
         data = response.json()
         hotel.title = data.get('name', hotel.title)
         hotel.save()
+        logger.debug(f'Hotel with id={hotel.api_id} was updated.')

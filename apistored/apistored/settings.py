@@ -152,3 +152,29 @@ CELERY_BROKER_TRANSPORT_OPTIONS = {
     'fanout_prefix': True
 }
 CELERY_BROKER_CONNECTION_MAX_RETRIES = 3
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+        }
+    },
+    'loggers': {
+        'hotels': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        }
+    }
+}

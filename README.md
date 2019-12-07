@@ -83,6 +83,8 @@ That's why I implemented simple `apiproxy` script that just uses HERE Maps API.
 
 However I wanted to show more of my skills working with `django`, `django-rest-framework` and `PostGIS`. And so I created 2nd version of backend - `apistored`. It uses the same HERE API, but stores hotels in local DB.
 
+Demo is available on the Heroku - https://ibestuzhev-lh-challenge.herokuapp.com/
+
 ## Run instructions
 
 ### API proxy
@@ -102,10 +104,13 @@ I modified response from Here API to match response from Django's version
 1. Add 2 variables for Here API - `LH_MAPS_APP_ID` and `LH_MAPS_APP_CODE`. Check [Here guide](https://developer.here.com/documentation/places/dev_guide/common/credentials.html) on how to get credentials
 1. Run `pipenv run apiproxy`
 
+This server also serves static files built by react app. So to see it fully running you need to check `hotelmap` section below and run `npm run build`.
+
 ### API Stored
 
 For `django` based version you need a little more of preparations.
 
+This version uses GeoDjango to use filtering based on coordinates and distanc. 
 You need to install geospatial libraries first.
 
 You can consult Django's doc about [Installing Geo Django](https://docs.djangoproject.com/en/3.0/ref/contrib/gis/install/#installation) and [Installing geo libraries](https://docs.djangoproject.com/en/3.0/ref/contrib/gis/install/geolibs/).
@@ -117,18 +122,22 @@ Also you need Redis to run celery and PostGIS to run DB. If you use docker you c
 After this you can do
 
 1. `pipenv install --dev`
-1. Add the same `.env` file as for `apiproxy`
-1. Activate virtual env with `pipenv shell`
-1. `cd apistored`
-1. `python manage.py migrate`
-1. `python manage.py runserver 8080`
+2. Add the same `.env` file as for `apiproxy`
+3. Activate virtual env with `pipenv shell`
+4. `cd apistored`
+5. `python manage.py migrate`
+6. `python manage.py runserver 8080`
 
 If you need celery, you can activate another `pipenv shell` in 2nd terminal window, navigate to `cd apistored` and run `celery worker -A apistored`. **Note** on Windows you should also add `--pool=solo`.
+
+Current code calls the task syncronously, but there are settings for this behaviour in `hotels/views.py`
 
 Things I would do if I want to prepare this for production:
 
 1. `runserver` is not production ready, so I will use `uwsgi`
-1. Nginx front
+2. Nginx as reverse proxy, it should serve static from react
+3. Setup logging
+4. Integrate Sentry.io or Elastic App Monitor or ELK stack.
 
 ### Hotelmap
 
@@ -145,10 +154,10 @@ Please note that this server proxies api calls to `localhost:8080`. So you shoul
 
 `npm run build` to build files under `build` folder, ready for production.
 
-
 Some things I'd implement for bigger project:
 
 * Use SCSS
 * Use Redux or Context if project get's bigger (deeper nesting of components)
-* There is a terrible fix for `here-maps-react` to handle markers update. I would like to similar apps, maybe some of them will perform better.
+* Add some loader when you search for new location
+* I would search and replace `here-maps-react` with similap application. This one introduced several bugs with marker update. Sometimes Markers get out of sync, and some markers are removed from DOM but stays on map. There is a terrible fix with random `key`, but even it sometimes fail
 * Move `package.json` to top level. Now there are two files, one is actual react script and second is for Heroku. And this does not allow Heroku to cache dependencies.
